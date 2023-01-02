@@ -1,0 +1,38 @@
+name: Kics
+
+on:
+  workflow_run:
+    workflows: ["Terraform"]
+    types:
+      - completed
+
+jobs:
+  kics-job:
+    runs-on: ubuntu-latest
+    name: Kics
+    steps:
+      #- name: Checkout repo
+      #  uses: actions/checkout@v3
+
+      - name: Restore execution plan
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: terraform.yml
+          workflow_conclusion: success
+          name: execution-plan
+
+      - name: mkdir kics
+        run: mkdir kics
+
+      - name: Run Kics
+        uses: checkmarx/kics-github-action@v1.6
+        continue-on-error: true
+        with:
+          path: './'
+          output_paths: "./kics"
+
+      - name: Upload Kics findings
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: kics/results.sarif

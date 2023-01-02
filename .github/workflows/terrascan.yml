@@ -1,0 +1,23 @@
+name: Terrascan
+
+on:
+  workflow_run:
+    workflows: ["Terraform"]
+    types:
+      - completed
+
+jobs:
+  terrascan-job:
+    runs-on: ubuntu-latest
+    name: Terrascan
+    steps:
+
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Run Terrascan action
+        uses: tenable/terrascan-action@main
+        with:
+          iac_type: 'terraform'
+          iac_dir: 'iac'
+          sarif_upload: true

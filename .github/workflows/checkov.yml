@@ -1,0 +1,27 @@
+name: Checkov
+
+on:
+  workflow_run:
+    workflows: ["Terraform"]
+    types:
+      - completed
+
+jobs:
+  checkov-job:
+    runs-on: ubuntu-latest
+    name: Checkov
+    steps:
+
+      - name: Restore execution plan
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: terraform.yml
+          workflow_conclusion: success
+          name: execution-plan
+
+      - name: Run Checkov action
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          file: execution-plan.json
